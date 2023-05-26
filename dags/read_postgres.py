@@ -1,11 +1,10 @@
-import os
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.utils.dates import days_ago
 
 def read_and_display_data():
-    db_hook = PostgresHook(postgres_conn_id=os.getenv('SANDBOX_DB_STRING'))
+    db_hook = PostgresHook(postgres_conn_id="postgres_sbx")
     conn = db_hook.get_conn()
     cursor = conn.cursor()
 
