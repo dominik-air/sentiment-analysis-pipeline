@@ -42,7 +42,7 @@ def insert_data():
             """
         cursor.execute(insert_tweet_query)
         conn.commit()
-        
+
 with DAG(
     "create_and_populate_table_dag",
     default_args={
