@@ -48,8 +48,12 @@ def insert_data():
     
     df["user_id"] = user_ids
     df.drop(columns=["user", "id"], inplace=True)
+<<<<<<< HEAD
     df.to_sql("tweets", con=db_hook.get_uri(), if_exists="append")
 >>>>>>> use dbstring instead
+=======
+    df.to_sql("tweets", con=db_hook.get_uri(), if_exists="append", index_label="id")
+>>>>>>> xd
 
 with DAG(
     "create_and_populate_table_dag",
