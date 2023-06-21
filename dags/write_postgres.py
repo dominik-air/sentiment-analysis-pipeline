@@ -1,60 +1,50 @@
+import requests
+import pandas as pd
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.utils.dates import days_ago
 
 
-def create_and_populate_table():
+def insert_data():
+    r = requests.get("http://34.90.170.212?n=10")
+
+    if r.status_code != 200: raise ValueError("API issue.")
+   
+    df = pd.DataFrame(r)
+
     db_hook = PostgresHook(postgres_conn_id="postgres_sbx")
     conn = db_hook.get_conn()
     cursor = conn.cursor()
 
-    table_check_query = """
-    SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE  table_schema = 'public'
-        AND    table_name   = 'persons'
-    );
-    """
-
-    cursor.execute(table_check_query)
-    table_exists = cursor.fetchone()[0]
-
-    if not table_exists:
-        create_table_query = """
-        CREATE TABLE persons (
-            id serial PRIMARY KEY,
-            name varchar(50),
-            age int
-        );
-        """
-        cursor.execute(create_table_query)
-
-        insert_data_query = """
-        INSERT INTO persons (name, age) VALUES
-        ('name1', 1),
-        ('name2', 2),
-        ('name3', 3);
-        """
-        cursor.execute(insert_data_query)
-        print("Data inserted successfully!")
-    else:
-        print("Table 'persons' is already present in the database!")
-
-    conn.commit()
-
+    user_ids = []
+    for user_name in df.user:
+        insert_user_query = f"""INSERT INTO Users (name) 
+        SELECT '{user_name}'
+        WHERE not exists (SELECT * FROM Users WHERE name = '{user_name}')"""
+        cursor.execute(insert_user_query)
+        conn.commit()
+        select_user_id = f"""SELECT id FROM Users WHERE name = '{user_name}';"""
+        cursor.execute(select_user_id)
+        conn.commit()
+        user_id = cursor.fetchall()[0][0]
+        user_ids.append(user_id)
+    
+    df["user_id"] = user_ids
+    df.drop(columns=["user", "id"], inplace=True)
+    df.to_sql("Tweets", con=conn, if_exists="append")
 
 with DAG(
     "create_and_populate_table_dag",
     default_args={
         "owner": "airflow",
     },
-    description="An example DAG that writes to PostgreSQL",
-    schedule_interval=None,
-    start_date=days_ago(2),
+    description="Downloads data from Twitter API and inserts it into the DB.",
+    schedule_interval="*/15 * * * *",
+    start_date=days_ago(1),
     tags=["example"],
     catchup=False
 ) as dag:
     create_and_populate_table_task = PythonOperator(
-        task_id="create_and_populate_table", python_callable=create_and_populate_table
+        task_id="insert_data", python_callable=insert_data
     )
