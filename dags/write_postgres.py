@@ -32,7 +32,7 @@ def insert_data():
     
     df["user_id"] = user_ids
     df.drop(columns=["user", "id"], inplace=True)
-    df.to_sql("Tweets", con=conn, if_exists="append")
+    df.to_sql("tweets", con=conn, if_exists="append")
 
 with DAG(
     "create_and_populate_table_dag",
