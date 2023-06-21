@@ -17,22 +17,31 @@ def insert_data():
     conn = db_hook.get_conn()
     cursor = conn.cursor()
 
-    user_ids = []
-    for user_name in df.user:
+    for _, row in df.iterrows():
         insert_user_query = f"""INSERT INTO Users (name) 
-        SELECT '{user_name}'
-        WHERE not exists (SELECT * FROM Users WHERE name = '{user_name}')"""
+        SELECT '{row['user']}'
+        WHERE not exists (SELECT * FROM Users WHERE name = '{row['user']}')"""
         cursor.execute(insert_user_query)
         conn.commit()
-        select_user_id = f"""SELECT id FROM Users WHERE name = '{user_name}';"""
+        select_user_id = f"""SELECT id FROM Users WHERE name = '{row['user']}';"""
         cursor.execute(select_user_id)
         conn.commit()
         user_id = cursor.fetchall()[0][0]
-        user_ids.append(user_id)
-    
-    df["user_id"] = user_ids
-    df.drop(columns=["user", "id"], inplace=True)
-    df.to_sql("tweets", con=db_hook.get_uri(), if_exists="append", index_label="id")
+
+        cursor.execute("SELECT MAX(id) FROM Tweets;")
+        max_id = cursor.fetchone()[0]
+        
+        if max_id is None:
+            max_id = 0
+        
+        new_id = max_id + 1
+
+        insert_tweet_query = f"""
+            INSERT INTO Tweets (id, body, user_id, created_at)
+            VALUES ('{new_id}', '{row['body'].replace("'", "")}', '{user_id}', '{row['created_at']}');
+            """
+        cursor.execute(insert_tweet_query)
+        conn.commit()
 
 with DAG(
     "create_and_populate_table_dag",
