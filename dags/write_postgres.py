@@ -27,6 +27,7 @@ def insert_data():
         cursor.execute(select_user_id)
         conn.commit()
         user_id = cursor.fetchall()[0][0]
+<<<<<<< HEAD
 
         cursor.execute("SELECT MAX(id) FROM Tweets;")
         max_id = cursor.fetchone()[0]
@@ -42,6 +43,13 @@ def insert_data():
             """
         cursor.execute(insert_tweet_query)
         conn.commit()
+=======
+        user_ids.append(user_id)
+    
+    df["user_id"] = user_ids
+    df.drop(columns=["user", "id"], inplace=True)
+    df.to_sql("tweets", con=db_hook.get_uri(), if_exists="append")
+>>>>>>> use dbstring instead
 
 with DAG(
     "create_and_populate_table_dag",
