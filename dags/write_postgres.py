@@ -11,7 +11,7 @@ def insert_data():
 
     if r.status_code != 200: raise ValueError("API issue.")
    
-    df = pd.DataFrame(r)
+    df = pd.DataFrame(r.json())
 
     db_hook = PostgresHook(postgres_conn_id="postgres_sbx")
     conn = db_hook.get_conn()
