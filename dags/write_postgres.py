@@ -28,6 +28,9 @@ def insert_data():
         conn.commit()
         user_id = cursor.fetchall()[0][0]
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> now it should work
 
         cursor.execute("SELECT MAX(id) FROM Tweets;")
         max_id = cursor.fetchone()[0]
@@ -43,6 +46,7 @@ def insert_data():
             """
         cursor.execute(insert_tweet_query)
         conn.commit()
+<<<<<<< HEAD
 =======
         user_ids.append(user_id)
     
@@ -54,6 +58,8 @@ def insert_data():
 =======
     df.to_sql("tweets", con=db_hook.get_uri(), if_exists="append", index_label="id")
 >>>>>>> xd
+=======
+>>>>>>> now it should work
 
 with DAG(
     "create_and_populate_table_dag",
