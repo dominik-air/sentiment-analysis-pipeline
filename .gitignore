@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 .venv
 venv
 data
 .DS_Store
+=======
+.DS_Store
+.venv
+>>>>>>> add insert data dag
