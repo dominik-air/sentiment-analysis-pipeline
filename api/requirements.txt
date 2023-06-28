@@ -1,0 +1,4 @@
+dask
+fastapi
+uvicorn
+pandas
