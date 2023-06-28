@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-airflow-logs
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 1Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+  csi:
+    driver: filestore.csi.storage.gke.io
+    volumeHandle: "modeInstance/europe-west4-a/airflow-logs/logs"
+    volumeAttributes:
+      ip: 10.234.145.2
+      volume: logs
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-airflow-logs
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: pv-airflow-logs
+  resources:
+    requests:
+      storage: 10Gi

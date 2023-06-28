@@ -1,0 +1,166 @@
+airflow:
+  image:
+    repository: apache/airflow
+    tag: 2.5.3-python3.8
+  executor: KubernetesExecutor
+  config:
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "False"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    AIRFLOW__LOGGING__LOG_FILENAME_TEMPLATE: "{{ ti.dag_id }}/{{ ti.task_id }}/{{ ts }}/{{ try_number }}.log"
+    AIRFLOW__LOGGING__LOG_FORMAT: "%(message)s"
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: "60" # How often (in seconds) to scan the DAGs directory for new files.
+    AIRFLOW__CORE__SQL_ALCHEMY_POOL_SIZE: "5" # The maximum number of database connections in the pool. 0 indicates no limit.
+    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: "500" # The number of task instances allowed to run concurrently by the scheduler for one DAG.
+    AIRFLOW__CORE__PARALLELISM: "500" # Number of tasks that can be run in parallel among all DAGs.
+    AIRFLOW__API__AUTH_BACKEND: "airflow.api.auth.backend.default"
+    AIRFLOW__KUBERNETES__DELETE_WORKER_PODS: "True"
+    AIRFLOW__KUBERNETES__NAMESPACE: "airflow"
+    AIRFLOW__KUBERNETES__WORKER_PODS_CREATION_BATCH_SIZE: "1" # Number of Kubernetes Worker Pod creation calls per scheduler loop.
+    AIRFLOW__SCHEDULER__SCHEDULE_AFTER_TASK_EXECUTION: "False"
+    AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: "300"
+    AIRFLOW__KUBERNETES_EXECUTOR__WORKER_PODS_PENDING_TIMEOUT: "600"
+    AIRFLOW__KUBERNETES__WORKER_PODS_PENDING_TIMEOUT_CHECK_INTERVAL: "600"
+    AIRFLOW__LOGGING__LOGGING_LEVEL: "INFO" # DEBUG, INFO, WARNING, ERROR or CRITICAL.
+    AIRFLOW__LOGGING__FAB_LOGGING_LEVEL: "WARNING"
+  users:
+    - role: Admin
+      username: ...
+      email: admin@example.com
+      firstName: admin
+      lastName: admin
+      password: ...
+  usersUpdate: false
+  variablesUpdate: false
+  defaultSecurityContext:
+    fsGroup: 50000
+  fernetKey: ...
+  webserverSecretKey: ...
+  connections:
+    - id: postgres_sbx
+      type: postgres
+      description: "sandbox db"
+      host: ...
+      port: 5432
+      login: ...
+      password: ...
+      schema: sandbox
+    - id: postgres_prd
+      type: postgres
+      description: "production db"
+      host: ...
+      port: 5432
+      login: ...
+      password: ...
+      schema: prod
+  kubernetesPodTemplate:
+    extraPipPackages:
+      - psycopg-binary
+      - transformers
+    resources:
+      requests:
+        ephemeral-storage: "2Gi"
+      limits:
+        ephemeral-storage: "4Gi"
+  dbMigrations:
+    enabled: true
+    runAsJob: true
+scheduler:
+  replicas: 1
+  logCleanup:
+    enabled: false
+  livenessProbe:
+    enabled: true
+    taskCreationCheck:
+      enabled: false
+  resources:
+    requests:
+      cpu: "750m"
+      memory: "750Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2048Mi"
+      ephemeral-storage: "8Gi"
+  extraPipPackages:
+    - psycopg-binary
+    - transformers
+web:
+  replicas: 1
+  service:
+    type: LoadBalancer
+    externalPort: 8080
+  webserverConfig:
+    stringOverride: |
+      WTF_CSRF_ENABLED = False
+  resources:
+    requests:
+      cpu: "300m"
+      memory: "1024Mi"
+      ephemeral-storage: "2Gi"
+    limits:
+      cpu: "1000m"
+      memory: "2048Mi"
+      ephemeral-storage: "8Gi"
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 50
+    timeoutSeconds: 20
+    failureThreshold: 6
+  extraPipPackages:
+    - psycopg-binary
+    - transformers
+workers:
+  enabled: false
+  logCleanup:
+    enabled: false
+triggerer:
+  enabled: false
+flower:
+  enabled: false
+logs:
+  path: /opt/airflow/logs
+  persistence:
+    enabled: true
+    existingClaim: pvc-airflow-logs
+    accessMode: ReadWriteMany
+dags:
+  path: /opt/airflow/dags
+  persistence:
+    enabled: false
+  gitSync:
+    enabled: true
+    resources:
+      requests:
+        cpu: "10m"
+        memory: "50Mi"
+      limits:
+        cpu: "50m"
+        memory: "100Mi"
+    repo: "https://github.com/dominik-air/sentiment-analysis-pipeline.git"
+    repoSubPath: "dags"
+    branch: dags
+    revision: HEAD
+    depth: 1
+    syncWait: 60
+    syncTimeout: 120
+rbac:
+  create: true
+  events: true
+ingress:
+  enabled: false
+serviceAccount:
+  create: true
+pgbouncer:
+  enabled: false
+postgresql:
+  enabled: false
+externalDatabase:
+  type: postgres
+  host: ...
+  port: 5432
+  database: airflow
+  user: ...
+  password: ...
+  sslmode: disable
+redis:
+  enabled: false
