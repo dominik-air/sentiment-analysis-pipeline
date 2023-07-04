@@ -7,8 +7,10 @@ from fastapi import FastAPI
 
 # USED DATASET
 # https://www.kaggle.com/datasets/kazanova/sentiment140
-TWEETS = df1.read_csv('data/tweets.csv', names=['target', 'ids', 'date', 'flag', 'user', 'text'])
-TWEETS = TWEETS[['ids', 'text', 'user', 'date']]
+TWEETS = df1.read_csv(
+    "data/tweets.csv", names=["target", "ids", "date", "flag", "user", "text"]
+)
+TWEETS = TWEETS[["ids", "text", "user", "date"]]
 
 
 def get_tweets(N: int) -> pd.DataFrame:
@@ -24,14 +26,19 @@ def get_tweets(N: int) -> pd.DataFrame:
         body.append(tweet[2])
         user.append(tweet[3])
         created_at.append(tweet[4])
-    tweets_dict['id'], tweets_dict['body'], tweets_dict['user'], tweets_dict['created_at'] = tweet_id, body, user, created_at
+    (
+        tweets_dict["id"],
+        tweets_dict["body"],
+        tweets_dict["user"],
+        tweets_dict["created_at"],
+    ) = (tweet_id, body, user, created_at)
     return pd.DataFrame(tweets_dict)
 
 
 app = FastAPI()
 
 
-@app.get('/')
+@app.get("/")
 async def get_n_tweets(n: int):
     tweets_df = get_tweets(n)
     return tweets_df.to_dict(orient="records")
