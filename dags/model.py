@@ -17,7 +17,8 @@ class Model:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.config = AutoConfig.from_pretrained(model_name)
         
-        db_string = "postgresql://postgres:NaszPostgresikUkochany@34.32.246.110:5432/sandbox"
+        db_hook = PostgresHook(postgres_conn_id="postgres_sbx")
+        db_string = db_hook.get_uri()
         self.engine = create_engine(db_string)
         self.tweets = Table('tweets', MetaData(), autoload=True, autoload_with=self.engine)
         self.sentiments = Table('sentiments', MetaData(), autoload=True, autoload_with=self.engine)
@@ -99,7 +100,7 @@ with DAG(
         "owner": "airflow",
     },
     description="Read data from database, calculate sentiment ratios and insert results into database",
-    schedule_interval="*/15 * * * *",
+    schedule_interval="*/20 * * * *",
     start_date=days_ago(1),
     tags=["example"],
     catchup=False
