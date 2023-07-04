@@ -9,9 +9,8 @@ from airflow.utils.dates import days_ago
 def insert_data():
     r = requests.get("http://34.90.170.212?n=10")
 
-    if r.status_code != 200:
-        raise ValueError("API issue.")
-
+    if r.status_code != 200: raise ValueError("API issue.")
+   
     df = pd.DataFrame(r.json())
 
     db_hook = PostgresHook(postgres_conn_id="postgres_sbx")
@@ -28,20 +27,13 @@ def insert_data():
         cursor.execute(select_user_id)
         conn.commit()
         user_id = cursor.fetchall()[0][0]
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> now it should work
-=======
->>>>>>> 0170fcd24c25e0ad0863799a6fe39078fe2ef37f
 
         cursor.execute("SELECT MAX(id) FROM Tweets;")
         max_id = cursor.fetchone()[0]
-
+        
         if max_id is None:
             max_id = 0
-
+        
         new_id = max_id + 1
 
         insert_tweet_query = f"""
@@ -50,24 +42,6 @@ def insert_data():
             """
         cursor.execute(insert_tweet_query)
         conn.commit()
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-        user_ids.append(user_id)
-    
-    df["user_id"] = user_ids
-    df.drop(columns=["user", "id"], inplace=True)
-<<<<<<< HEAD
-    df.to_sql("tweets", con=db_hook.get_uri(), if_exists="append")
->>>>>>> use dbstring instead
-=======
-    df.to_sql("tweets", con=db_hook.get_uri(), if_exists="append", index_label="id")
->>>>>>> xd
-=======
->>>>>>> now it should work
-=======
->>>>>>> 0170fcd24c25e0ad0863799a6fe39078fe2ef37f
-
 
 with DAG(
     "create_and_populate_table_dag",
@@ -78,7 +52,7 @@ with DAG(
     schedule_interval="*/15 * * * *",
     start_date=days_ago(1),
     tags=["example"],
-    catchup=False,
+    catchup=False
 ) as dag:
     create_and_populate_table_task = PythonOperator(
         task_id="insert_data", python_callable=insert_data
