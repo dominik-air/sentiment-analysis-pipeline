@@ -12,11 +12,6 @@ from transformers import AutoTokenizer, AutoConfig
 
 class Model:
     def __init__(self):
-        model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.config = AutoConfig.from_pretrained(model_name)
-        
         db_hook = PostgresHook(postgres_conn_id="postgres_sbx")
         db_string = db_hook.get_uri()
         self.engine = create_engine(db_string)
@@ -24,7 +19,13 @@ class Model:
         self.sentiments = Table('sentiments', MetaData(), autoload=True, autoload_with=self.engine)
         
         self.dataframe = self.read_data()
-        
+    
+    def _init_model(self):
+        model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.config = AutoConfig.from_pretrained(model_name)
+    
     def read_data(self):
         stmt = (
             select([
@@ -84,6 +85,7 @@ class Model:
         self.dataframe.to_sql('sentiments', self.engine, if_exists='append', index=True, index_label='id')
         
     def predict(self):
+        self._init_model()
         self.dataframe.body = self.dataframe.body.apply(Model.preprocess)
         self.dataframe['scores'] = self.dataframe.body.apply(self.get_model_output)
         
@@ -106,5 +108,5 @@ with DAG(
     catchup=False
 ) as dag:
     calculate_sentiment_ratios = PythonOperator(
-        task_id="model", python_callable=Model().predict()
+        task_id="model", python_callable=Model().predict
     )
