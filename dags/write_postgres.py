@@ -30,8 +30,11 @@ def insert_data():
         user_id = cursor.fetchall()[0][0]
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> now it should work
+=======
+>>>>>>> 0170fcd24c25e0ad0863799a6fe39078fe2ef37f
 
         cursor.execute("SELECT MAX(id) FROM Tweets;")
         max_id = cursor.fetchone()[0]
@@ -48,6 +51,7 @@ def insert_data():
         cursor.execute(insert_tweet_query)
         conn.commit()
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         user_ids.append(user_id)
     
@@ -61,6 +65,8 @@ def insert_data():
 >>>>>>> xd
 =======
 >>>>>>> now it should work
+=======
+>>>>>>> 0170fcd24c25e0ad0863799a6fe39078fe2ef37f
 
 
 with DAG(
