@@ -1,4 +1,5 @@
 # Sentiment analysis pipeline
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
 The project consists in cyclical downloading of data from Twitter, and then conducting sentiment analysis of these tweets.
