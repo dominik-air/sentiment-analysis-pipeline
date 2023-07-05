@@ -33,8 +33,6 @@ airflow:
   variablesUpdate: false
   defaultSecurityContext:
     fsGroup: 50000
-  fernetKey: ...
-  webserverSecretKey: ...
   connections:
     - id: postgres_sbx
       type: postgres
@@ -138,7 +136,7 @@ dags:
         memory: "100Mi"
     repo: "https://github.com/dominik-air/sentiment-analysis-pipeline.git"
     repoSubPath: "dags"
-    branch: dags
+    branch: main
     revision: HEAD
     depth: 1
     syncWait: 60
